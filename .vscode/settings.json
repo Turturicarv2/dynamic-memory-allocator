@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "stdio.h": "c",
+        "memory_allocation.h": "c",
+        "stdlib.h": "c"
+    }
+}
