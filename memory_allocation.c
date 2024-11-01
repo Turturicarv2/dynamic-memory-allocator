@@ -1,16 +1,11 @@
+/* INCLUDES */
 #include "memory_allocation.h"
 
+/* GLOBAL VARIABLIE DEFINITIONS */
 memory_chunk_t* first_memory_chunk = NULL;
 
-int main() 
-{
-    int* local_var = (int *)allocate_memory(32);
-    *local_var = 2147483647; // MAX_INT
-    printf("%d\n", *local_var);
 
-    return 0;
-}
-
+/* FUNCTION DEFINITIONS */
 void initialize_dynamic_memory()
 {
     /* Allocate a large block of memory using mmap */
@@ -28,6 +23,7 @@ void initialize_dynamic_memory()
     first_memory_chunk->metadata.in_use = false;
     first_memory_chunk->next_chunk = NULL;
 }
+
 
 void* allocate_memory(__uint16_t needed_memory_size)
 {
@@ -58,6 +54,7 @@ void* allocate_memory(__uint16_t needed_memory_size)
 
     /* TODO: No memory available case */
 }
+
 
 void* chunk_split(memory_chunk_t* initial_chunk, __uint16_t split_size)
 {
