@@ -29,5 +29,6 @@ memory_chunk_t* first_memory_chunk;
 
 /* FUNCTION DECLARATIONS */
 void* allocate_memory(__uint16_t needed_memory_size);
+void free_memory(void* chunk);
 static void initialize_dynamic_memory();
 static void* chunk_split(memory_chunk_t* initial_chunk, __uint16_t split_size);

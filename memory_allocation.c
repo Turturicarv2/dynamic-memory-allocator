@@ -32,11 +32,13 @@ void* allocate_memory(__uint16_t needed_memory_size)
         else if((current_chunk->metadata.chunk_size == needed_memory_size)
                 || (current_chunk->metadata.chunk_size - CHUNK_STRUCT_SIZE < needed_memory_size))
         {
+            /* use current chunk */
             current_chunk->metadata.in_use = true;
             return (void *)((__uint8_t *)current_chunk + CHUNK_STRUCT_SIZE);
         }
         else
         {
+            /* split current chunk */
             return chunk_split(current_chunk, needed_memory_size);
         }
     }
@@ -54,7 +56,7 @@ static void initialize_dynamic_memory()
     /* memory allocation failed (no free memory) */
     if(memory_address == MAP_FAILED)
     {
-        return (void *) -1;
+        return;
     }
 
     /* Initialize first memory chunk */
@@ -67,6 +69,7 @@ static void initialize_dynamic_memory()
 
 static void* chunk_split(memory_chunk_t* initial_chunk, __uint16_t split_size)
 {
+    /* create new memory chunk that will hold the remaining size from the initial chunk */
     memory_chunk_t* new_memory_chunk = (void *)
             ((char *)initial_chunk + split_size + CHUNK_STRUCT_SIZE);
     new_memory_chunk->metadata.chunk_size = 
@@ -74,8 +77,17 @@ static void* chunk_split(memory_chunk_t* initial_chunk, __uint16_t split_size)
     new_memory_chunk->metadata.in_use = false;
     new_memory_chunk->next_chunk = initial_chunk->next_chunk;
 
+    /* initial chunk will shrink to fit the size needed and get returned */
     initial_chunk->metadata.chunk_size = split_size;
     initial_chunk->metadata.in_use = true;
     initial_chunk->next_chunk = new_memory_chunk;
     return (void *)((char *)initial_chunk + CHUNK_STRUCT_SIZE);
+}
+
+
+void free_memory(void* chunk)
+{
+    memory_chunk_t* free_chunk = (memory_chunk_t *)((char *)chunk - CHUNK_STRUCT_SIZE);
+    free_chunk->metadata.in_use = false;
+    return;
 }
