@@ -87,14 +87,29 @@ static void* chunk_split(memory_chunk_t* initial_chunk, __uint16_t split_size)
 
 void free_memory(void* chunk)
 {
-    memory_chunk_t* free_chunk = (memory_chunk_t *)((char *)chunk - CHUNK_STRUCT_SIZE);
-    free_chunk->metadata.in_use = false;
+    /* search through the linked list to see if 
+    the sent pointer is part of the memory chunks */
+    memory_chunk_t* current_chunk = first_memory_chunk;
+    while((current_chunk != (memory_chunk_t *)((char *)chunk - CHUNK_STRUCT_SIZE))
+            && (current_chunk != NULL))
+    {
+        current_chunk = current_chunk->next_chunk;
+    }
+
+    /* sent pointer does not point to memory chunks */
+    if (current_chunk == NULL)
+    {
+        return;
+    }
+
+    current_chunk->metadata.in_use = false;
     
-    memory_chunk_t* next_memory_chunk = free_chunk->next_chunk;
+    /* memory coalescing */
+    memory_chunk_t* next_memory_chunk = current_chunk->next_chunk;
     if (next_memory_chunk->metadata.in_use == false) 
     {
-        free_chunk->metadata.chunk_size = free_chunk->metadata.chunk_size 
+        current_chunk->metadata.chunk_size = current_chunk->metadata.chunk_size 
                 + next_memory_chunk->metadata.chunk_size + CHUNK_STRUCT_SIZE;
-        free_chunk->next_chunk = next_memory_chunk->next_chunk;
+        current_chunk->next_chunk = next_memory_chunk->next_chunk;
     }
 }
