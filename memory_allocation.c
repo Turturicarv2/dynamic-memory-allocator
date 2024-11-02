@@ -10,7 +10,7 @@ void* allocate_memory(__uint16_t needed_memory_size)
     /* if no memory is needed, then exit function */
     if(needed_memory_size == 0)
     {
-        return (void *) -1;
+        return NULL;
     }
 
     /* for the first time the function is called, get the memory from the system */
@@ -44,7 +44,7 @@ void* allocate_memory(__uint16_t needed_memory_size)
     }
 
     /* No memory available in linked list */
-    return (void *) -1;
+    return NULL;
 }
 
 
@@ -89,5 +89,12 @@ void free_memory(void* chunk)
 {
     memory_chunk_t* free_chunk = (memory_chunk_t *)((char *)chunk - CHUNK_STRUCT_SIZE);
     free_chunk->metadata.in_use = false;
-    return;
+    
+    memory_chunk_t* next_memory_chunk = free_chunk->next_chunk;
+    if (next_memory_chunk->metadata.in_use == false) 
+    {
+        free_chunk->metadata.chunk_size = free_chunk->metadata.chunk_size 
+                + next_memory_chunk->metadata.chunk_size + CHUNK_STRUCT_SIZE;
+        free_chunk->next_chunk = next_memory_chunk->next_chunk;
+    }
 }
