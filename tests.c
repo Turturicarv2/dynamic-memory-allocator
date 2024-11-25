@@ -28,6 +28,7 @@ Test(memory_allocation, test_simple_allocation)
     free_memory(block);
 }
 
+/* zero allocation test that tries to allocate a block of memory of 0 bytes */
 Test(memory_allocation, test_zero_allocation)
 {
     void* block = allocate_memory(0);

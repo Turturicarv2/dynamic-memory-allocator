@@ -117,6 +117,12 @@ void free_memory(void *chunk)
         return;
     }
 
+    /* sent pointer was already freed */
+    if(current_chunk->metadata.in_use == NOT_IN_USE)
+    {
+        return;
+    }
+
     /* clear chunk data */
     memset(
             current_chunk + CHUNK_STRUCT_SIZE, 
