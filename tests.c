@@ -28,6 +28,7 @@ Test(memory_allocation, test_simple_allocation)
     free_memory(block);
 }
 
+
 /* zero allocation test that tries to allocate a block of memory of 0 bytes */
 Test(memory_allocation, test_zero_allocation)
 {
@@ -35,6 +36,9 @@ Test(memory_allocation, test_zero_allocation)
     cr_assert(eq(block, NULL), "assert that a block of memory was not allocated");
 }
 
+
+/* simple free memory test that checks that after a memory block is freed,
+it can be used again afterwards */
 Test(memory_allocation, test_simple_free_memory)
 {
     void* block1 = allocate_memory(16);
@@ -55,4 +59,17 @@ Test(memory_allocation, test_simple_free_memory)
         eq(block1, block2),
         "assert that the second block of memory has the same address as the first one"
     );
+}
+
+
+/* free memory test that tries to free the same block of memory twice */
+Test(memory_allocation, test_double_free_memory)
+{
+    void* block = allocate_memory(16);
+    cr_assert(
+        ne(block, NULL), 
+        "assert that a block of memory was allocated successfully"
+    );
+    free_memory(block);
+    free_memory(block);
 }
