@@ -35,3 +35,24 @@ Test(memory_allocation, test_zero_allocation)
     cr_assert(eq(block, NULL), "assert that a block of memory was not allocated");
 }
 
+Test(memory_allocation, test_simple_free_memory)
+{
+    void* block1 = allocate_memory(16);
+    cr_assert(
+        ne(block1, NULL), 
+        "assert that a block of memory was allocated successfully"
+    );
+    free_memory(block1);
+
+    void* block2 = allocate_memory(16);
+    cr_assert(
+        ne(block2, NULL), 
+        "assert that a block of memory was allocated successfully"
+    );
+    free_memory(block2);
+
+    cr_assert(
+        eq(block1, block2),
+        "assert that the second block of memory has the same address as the first one"
+    );
+}
