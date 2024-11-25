@@ -73,3 +73,48 @@ Test(memory_allocation, test_double_free_memory)
     free_memory(block);
     free_memory(block);
 }
+
+
+/* test that will check if the memory allocator will allocate the first chunk
+that fits exactly or will attempt to split another chunk */
+Test(memory_allocation, exact_fit_allocation)
+{
+    void* block1 = allocate_memory(16);
+    cr_assert(
+        ne(block1, NULL), 
+        "assert that a block of memory was allocated successfully"
+    );
+
+    void* block2 = allocate_memory(16);
+    cr_assert(
+        ne(block2, NULL), 
+        "assert that a block of memory was allocated successfully"
+    );
+
+    void* block3 = allocate_memory(16);
+    cr_assert(
+        ne(block3, NULL), 
+        "assert that a block of memory was allocated successfully"
+    );
+
+    /* in order to be not coalesce adjacent memory, 
+    we need the adjacent memory blocks to be in use*/
+    free_memory(block2);
+
+    void* block4 = allocate_memory(16);
+    cr_assert(
+        ne(block4, NULL), 
+        "assert that a block of memory was allocated successfully"
+    );
+
+    /* check that the new block of memory has the same address as the 
+    previous block of memory of the same size */
+    cr_assert(
+        eq(block4, block2),
+        "assert that the block of memory received has the same address as the one deallocated recently"
+    );
+
+    free_memory(block1);
+    free_memory(block3);
+    free_memory(block4);
+}
