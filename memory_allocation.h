@@ -1,9 +1,13 @@
+#ifndef MEMORY_ALLOCATION_H
+#define MEMORY_ALLOCATION_H
+
 /* INCLUDES */
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <stdlib.h>
 #include <stdbool.h> 
+#include <stdint.h>
 
 /* DEFINES */
 #define PROT_READ_WRITE (PROT_READ | PROT_WRITE)
@@ -15,7 +19,7 @@
 /* DEFINED DATA STRUCTURES */
 typedef struct chunk_metadata
 {
-    __uint16_t chunk_size;
+    uint16_t chunk_size;
     bool in_use;
 } chunk_metadata_t;
 
@@ -26,11 +30,11 @@ typedef struct memory_chunk
 } memory_chunk_t;
 
 /* GLOBAL VARIABLE DECLARATIONS */
-memory_chunk_t* first_memory_chunk;
+extern memory_chunk_t* first_memory_chunk;
 
 /* FUNCTION DECLARATIONS */
 void *allocate_memory(__uint16_t needed_memory_size);
 void free_memory(void *chunk);
-static void initialize_dynamic_memory();
-static void *chunk_split(memory_chunk_t *initial_chunk, __uint16_t split_size);
-static memory_chunk_t *search_suitable_chunk(__uint16_t needed_memory_size);
+
+#endif
+/* EOF */

@@ -1,12 +1,17 @@
 /* INCLUDES */
 #include "memory_allocation.h"
 
+/* STATIC FUNCTIONS DECLARATIONS */
+static void initialize_dynamic_memory();
+static void *chunk_split(memory_chunk_t *initial_chunk, uint16_t split_size);
+static memory_chunk_t *search_suitable_chunk(uint16_t needed_memory_size);
+
 /* GLOBAL VARIABLIE DEFINITIONS */
 memory_chunk_t *first_memory_chunk = NULL;
 
 
 /* main allocation function that returns pointer to free memory address */
-void *allocate_memory(__uint16_t needed_memory_size)
+void *allocate_memory(uint16_t needed_memory_size)
 {
     /* if no memory is needed, then exit function */
     if(needed_memory_size == 0)
@@ -72,7 +77,7 @@ static void initialize_dynamic_memory()
 using a best-fit algorithm that searches for the smallest memory chunk that can 
 fit the memory size needed for the new chunk, wether if it fits perfectly 
 or needs to be split into 2 smaller chunks */
-static memory_chunk_t *search_suitable_chunk(__uint16_t needed_memory_size)
+static memory_chunk_t *search_suitable_chunk(uint16_t needed_memory_size)
 {
     memory_chunk_t *current_chunk = first_memory_chunk;
     memory_chunk_t *suitable_chunk = NULL;
@@ -102,7 +107,7 @@ static memory_chunk_t *search_suitable_chunk(__uint16_t needed_memory_size)
 
 
 /* function that splits a bigger chunk into 2 smaller ones */
-static void *chunk_split(memory_chunk_t *initial_chunk, __uint16_t split_size)
+static void *chunk_split(memory_chunk_t *initial_chunk, uint16_t split_size)
 {
     /* create new memory chunk that will hold the remaining size from the initial chunk */
     memory_chunk_t *new_memory_chunk = (void *)
