@@ -37,8 +37,8 @@ Test(memory_allocation, test_zero_allocation)
 }
 
 
-/* simple free memory test that checks that after a memory block is freed,
-it can be used again afterwards */
+/* test that checks when a memory block is freed,
+if it can be used again afterwards */
 Test(memory_allocation, test_simple_free_memory)
 {
     void* block = allocate_memory(16);
@@ -56,12 +56,12 @@ Test(memory_allocation, test_simple_free_memory)
     free_memory(block);
     cr_assert(
         eq(chunk->metadata.in_use, NOT_IN_USE), 
-        "returned memory chunk was not set to NOT_IN_USE!"
+        "memory chunk was not set to NOT_IN_USE!"
     );
 }
 
 
-/* free memory test that tries to free the same block of memory twice */
+/* test that tries to free the same block of memory twice */
 Test(memory_allocation, test_double_free_memory)
 {
     void* block = allocate_memory(16);
@@ -69,8 +69,24 @@ Test(memory_allocation, test_double_free_memory)
         ne(block, NULL), 
         "assert that a block of memory was allocated successfully"
     );
+
+    memory_chunk_t *chunk = (memory_chunk_t *)((char *)block - CHUNK_STRUCT_SIZE);
+    cr_assert(
+        eq(chunk->metadata.in_use, IN_USE), 
+        "returned memory chunk was not set to IN_USE!"
+    );
+
     free_memory(block);
+    cr_assert(
+        eq(chunk->metadata.in_use, NOT_IN_USE), 
+        "returned memory chunk was not set to IN_USE!"
+    );
+
     free_memory(block);
+    cr_assert(
+        eq(chunk->metadata.in_use, NOT_IN_USE), 
+        "returned memory chunk was not set to IN_USE!"
+    );
 }
 
 
