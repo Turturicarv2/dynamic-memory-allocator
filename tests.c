@@ -187,3 +187,43 @@ Test(memory_allocation, stress_test)
     free_memory(block);
 }
 
+
+/* test the splitting function of the memory allocator */
+Test(memory_allocation, splitting_test) {
+    // Allocate a block smaller than the first chunk
+    uint8_t size = 128;
+    void *block = allocate_memory(size);
+    cr_assert(
+        ne(block, NULL), 
+        "block of memory was not allocated successfully"
+    );
+
+    // Check if the chunk was split
+    memory_chunk_t *chunk = (memory_chunk_t *)((char *)block - CHUNK_STRUCT_SIZE);
+    cr_assert(
+        eq(chunk->metadata.in_use, IN_USE), 
+        "chunk not marked as in use"
+    );
+    cr_assert(
+        eq(chunk->metadata.chunk_size, size), 
+        "chunk size is not correct"
+    );
+
+    // Check the remaining chunk
+    memory_chunk_t *next_chunk = chunk->next_chunk;
+    cr_assert(
+        ne(next_chunk, NULL), 
+        "Next chunk after split is NULL"
+    );
+    cr_assert(
+        eq(next_chunk->metadata.in_use, NOT_IN_USE), 
+        "Next chunk should be free"
+    );
+    cr_assert(
+        eq(next_chunk->metadata.chunk_size + 2 * CHUNK_STRUCT_SIZE + chunk->metadata.chunk_size, 4096),
+        "Incorrect split sizes"
+    );
+
+    free_memory(chunk);
+}
+
