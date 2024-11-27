@@ -84,6 +84,10 @@ static memory_chunk_t *search_suitable_chunk(__uint16_t needed_memory_size)
         {
             /* do nothing */
         }
+        /* perfect match */
+        else if (current_chunk->metadata.chunk_size == needed_memory_size) {
+            return current_chunk;
+        }
         else if((suitable_chunk == NULL) 
                 || (current_chunk->metadata.chunk_size < suitable_chunk->metadata.chunk_size))
         {
@@ -142,12 +146,6 @@ void free_memory(void *chunk)
         return;
     }
 
-    /* clear chunk data */
-    memset(
-            current_chunk + CHUNK_STRUCT_SIZE, 
-            0, 
-            current_chunk->metadata.chunk_size - CHUNK_STRUCT_SIZE
-    );
     current_chunk->metadata.in_use = NOT_IN_USE;
     
     /* memory coalescing */
