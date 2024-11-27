@@ -21,6 +21,15 @@ This repository contains a custom memory allocation library implemented in C. It
 - Tests:
     + `tests.c`: Unit tests implemented using [Criterion](https://github.com/Snaipe/Criterion) to validate the functionality of the memory allocator.
 
+###Tests
+The library includes a comprehensive suite of unit tests written with the Criterion testing framework.
+To run the tests, ensure you have Criterion installed on your system. Compile and run the tests using the following command:
+```
+gcc -o tests *.c -lcriterion
+./tests
+```
+This will execute all the tests and display the results in the terminal.
+
 ### Usage
 1. Include `memory_allocation.h` in your project.
 2. Link the library when compiling your project.
