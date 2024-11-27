@@ -67,7 +67,7 @@ Test(memory_allocation, test_double_free_memory)
     void* block = allocate_memory(16);
     cr_assert(
         ne(block, NULL), 
-        "assert that a block of memory was allocated successfully"
+        "block of memory was not allocated successfully"
     );
 
     memory_chunk_t *chunk = (memory_chunk_t *)((char *)block - CHUNK_STRUCT_SIZE);
@@ -79,13 +79,13 @@ Test(memory_allocation, test_double_free_memory)
     free_memory(block);
     cr_assert(
         eq(chunk->metadata.in_use, NOT_IN_USE), 
-        "returned memory chunk was not set to IN_USE!"
+        "returned memory chunk was not set to NOT_IN_USE afrer free_memory!"
     );
 
     free_memory(block);
     cr_assert(
         eq(chunk->metadata.in_use, NOT_IN_USE), 
-        "returned memory chunk was not set to IN_USE!"
+        "memory chunk was corrupted after second free_memory!"
     );
 }
 
@@ -97,33 +97,33 @@ Test(memory_allocation, exact_fit_allocation)
     void* block1 = allocate_memory(16);
     cr_assert(
         ne(block1, NULL), 
-        "assert that a block of memory was allocated successfully"
+        "block of memory was not allocated successfully"
     );
 
     void* block2 = allocate_memory(16);
     cr_assert(
         ne(block2, NULL), 
-        "assert that a block of memory was allocated successfully"
+        "block of memory was not allocated successfully"
     );
 
     void* block3 = allocate_memory(16);
     cr_assert(
         ne(block3, NULL), 
-        "assert that a block of memory was allocated successfully"
+        "block of memory was not allocated successfully"
     );
 
-    /* in order to be not coalesce adjacent memory, 
-    we need the adjacent memory blocks to be in use*/
+    /* in order to not coalesce with adjacent memory chunks, 
+    we need the adjacent memory chunks to be in use*/
     free_memory(block2);
 
     void* block4 = allocate_memory(16);
     cr_assert(
         ne(block4, NULL), 
-        "assert that a block of memory was allocated successfully"
+        "block of memory was not allocated successfully"
     );
 
     /* check that the new block of memory has the same address as the 
-    previous block of memory of the same size */
+    previous freed block of memory of the same size */
     cr_assert(
         eq(block4, block2),
         "assert that the block of memory received has the same address as the one deallocated recently"
