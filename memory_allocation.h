@@ -15,6 +15,7 @@
 #define IN_USE 1
 #define NOT_IN_USE 0
 #define CHUNK_STRUCT_SIZE (sizeof(memory_chunk_t))
+#define ALLOCATION_SIZE 4096
 
 /* DEFINED DATA STRUCTURES */
 typedef struct chunk_metadata

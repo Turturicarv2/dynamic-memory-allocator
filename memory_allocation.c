@@ -54,7 +54,7 @@ void *allocate_memory(uint16_t needed_memory_size)
 static void initialize_dynamic_memory()
 {
     /* Allocate a large block of memory using mmap */
-    void *memory_address = mmap(NULL, 4096, PROT_READ_WRITE, 
+    void *memory_address = mmap(NULL, ALLOCATION_SIZE, PROT_READ_WRITE, 
             MAP_PRIVATE_ANONYMOUS, -1, 0);
     /* memory allocation failed (no free memory) */
     if(memory_address == MAP_FAILED)
@@ -63,11 +63,11 @@ static void initialize_dynamic_memory()
     }
 
     /* zero out the memory block */
-    memset(memory_address, 0, 4096);
+    memset(memory_address, 0, ALLOCATION_SIZE);
 
     /* Initialize first memory chunk */
     first_memory_chunk = (memory_chunk_t *)memory_address;
-    first_memory_chunk->metadata.chunk_size = 4096 - CHUNK_STRUCT_SIZE;
+    first_memory_chunk->metadata.chunk_size = ALLOCATION_SIZE - CHUNK_STRUCT_SIZE;
     first_memory_chunk->metadata.in_use = NOT_IN_USE;
     first_memory_chunk->next_chunk = NULL;
 }
