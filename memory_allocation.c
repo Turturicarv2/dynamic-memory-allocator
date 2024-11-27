@@ -26,32 +26,22 @@ void *allocate_memory(__uint16_t needed_memory_size)
         return NULL;
     }
 
-    /* iterate through the linked list in search for a free chunk */
-    memory_chunk_t *current_chunk = first_memory_chunk;
-    while(current_chunk != NULL)
+    /* get the most suitable chunk */
+    memory_chunk_t *suitable_chunk = search_suitable_chunk(needed_memory_size);
+    if(suitable_chunk == NULL)
     {
-        if((current_chunk->metadata.in_use == IN_USE)
-                || (current_chunk->metadata.chunk_size < needed_memory_size))
-        {
-            current_chunk = current_chunk->next_chunk;
-        }
-        /* case where chunk is perfect size, 
-        or slightly bigger size but still too small to be split */
-        else if((current_chunk->metadata.chunk_size == needed_memory_size)
-                || (current_chunk->metadata.chunk_size - CHUNK_STRUCT_SIZE < needed_memory_size))
-        {
-            current_chunk->metadata.in_use = IN_USE;
-            return (void *)((__uint8_t *)current_chunk + CHUNK_STRUCT_SIZE);
-        }
-        else
-        {
-            /* split current chunk */
-            return chunk_split(current_chunk, needed_memory_size);
-        }
+        return NULL;
     }
-
-    /* No memory available in linked list */
-    return NULL;
+    /* chunk too small to be split */
+    else if(suitable_chunk->metadata.chunk_size - CHUNK_STRUCT_SIZE <= needed_memory_size)
+    {
+        suitable_chunk->metadata.in_use = IN_USE;
+        return (void *)((__uint8_t *)suitable_chunk + CHUNK_STRUCT_SIZE);
+    }
+    else
+    {
+        return chunk_split(suitable_chunk, needed_memory_size);
+    }
 }
 
 
@@ -75,6 +65,35 @@ static void initialize_dynamic_memory()
     first_memory_chunk->metadata.chunk_size = 4096 - CHUNK_STRUCT_SIZE;
     first_memory_chunk->metadata.in_use = NOT_IN_USE;
     first_memory_chunk->next_chunk = NULL;
+}
+
+
+/* function that searches for a suitable chunk based on the needed memory size
+using a best-fit algorithm that searches for the smallest memory chunk that can 
+fit the memory size needed for the new chunk, wether if it fits perfectly 
+or needs to be split into 2 smaller chunks */
+static memory_chunk_t *search_suitable_chunk(__uint16_t needed_memory_size)
+{
+    memory_chunk_t *current_chunk = first_memory_chunk;
+    memory_chunk_t *suitable_chunk = NULL;
+
+    while(current_chunk != NULL)
+    {
+        if((current_chunk->metadata.in_use == IN_USE)
+                || (current_chunk->metadata.chunk_size < needed_memory_size))
+        {
+            /* do nothing */
+        }
+        else if((suitable_chunk == NULL) 
+                || (current_chunk->metadata.chunk_size < suitable_chunk->metadata.chunk_size))
+        {
+            suitable_chunk = current_chunk;
+        }
+
+        current_chunk = current_chunk->next_chunk;
+    }
+
+    return suitable_chunk;
 }
 
 
