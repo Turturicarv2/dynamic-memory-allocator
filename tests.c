@@ -9,7 +9,7 @@ Test(memory_allocation, test_simple_allocation)
     void* block = allocate_memory(size);
     cr_assert(
         ne(block, NULL), 
-        "assert that a block of memory was allocated successfully"
+        "a block of memory could not be allocated successfully!"
     );
 
     /* write into the block of memory */
@@ -20,7 +20,7 @@ Test(memory_allocation, test_simple_allocation)
     {
         cr_assert(
             eq(i32, ((unsigned char*)block)[index], 0xA), 
-            "assert that writing into the memory block was done successfully"
+            "writing into the memory block was not done successfully"
         );
     }
 
@@ -29,11 +29,11 @@ Test(memory_allocation, test_simple_allocation)
 }
 
 
-/* zero allocation test that tries to allocate a block of memory of 0 bytes */
+/* test that tries to allocate a block of memory of 0 bytes */
 Test(memory_allocation, test_zero_allocation)
 {
     void* block = allocate_memory(0);
-    cr_assert(eq(block, NULL), "assert that a block of memory was not allocated");
+    cr_assert(eq(block, NULL), "a block of memory of size 0 was allocated!");
 }
 
 
@@ -41,23 +41,22 @@ Test(memory_allocation, test_zero_allocation)
 it can be used again afterwards */
 Test(memory_allocation, test_simple_free_memory)
 {
-    void* block1 = allocate_memory(16);
+    void* block = allocate_memory(16);
     cr_assert(
-        ne(block1, NULL), 
-        "assert that a block of memory was allocated successfully"
+        ne(block, NULL), 
+        "block1 was not allocated successfully"
     );
-    free_memory(block1);
 
-    void* block2 = allocate_memory(16);
+    memory_chunk_t *chunk = (memory_chunk_t *)((char *)block - CHUNK_STRUCT_SIZE);
     cr_assert(
-        ne(block2, NULL), 
-        "assert that a block of memory was allocated successfully"
+        eq(chunk->metadata.in_use, IN_USE), 
+        "returned memory chunk was not set to IN_USE!"
     );
-    free_memory(block2);
 
+    free_memory(block);
     cr_assert(
-        eq(block1, block2),
-        "assert that the second block of memory has the same address as the first one"
+        eq(chunk->metadata.in_use, NOT_IN_USE), 
+        "returned memory chunk was not set to NOT_IN_USE!"
     );
 }
 
