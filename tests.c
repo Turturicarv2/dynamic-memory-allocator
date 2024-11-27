@@ -133,3 +133,57 @@ Test(memory_allocation, exact_fit_allocation)
     free_memory(block3);
     free_memory(block4);
 }
+
+
+/* test that will try to push the limits of the memory allocator
+1) try 10,000 succeding allocations
+2) try maximum number of allocations without freeing */
+Test(memory_allocation, stress_test)
+{
+    uint16_t number_of_allocations = 10000;
+    uint8_t size = 16;
+    void *block;
+
+    /* Allocate many small blocks consecutively for 10,000 times*/
+    for (size_t i = 0; i < number_of_allocations; i++) {
+        block = allocate_memory(size);
+        cr_assert(
+            ne(block, NULL), 
+            "block of memory was not allocated successfully"
+        );
+        free_memory(block);
+    }
+
+    uint16_t max_number_allocations = ALLOCATION_SIZE / (size + CHUNK_STRUCT_SIZE);
+    void *block_vector[max_number_allocations];
+
+    /* Allocate many small blocks until no more memory available */
+    for (size_t i = 0; i < max_number_allocations; i++) {
+        block_vector[i] = allocate_memory(size);
+        cr_assert(
+            ne(block_vector[i], NULL), 
+            "block of memory was not allocated successfully"
+        );
+    }
+
+    /* Try allocating a block of memory when there is no more free memory */
+    block = allocate_memory(size);
+    cr_assert(
+        eq(block, NULL), 
+        "block of memory was allocated successfully when there is no memory free!"
+    );
+
+    /* Free all memory blocks */
+    for (size_t i = 0; i < max_number_allocations; i++) {
+        free_memory(block_vector[i]);
+    }
+
+    /* Allocate big block of memory */
+    block = allocate_memory(ALLOCATION_SIZE - CHUNK_STRUCT_SIZE);
+    cr_assert(
+        ne(block, NULL), 
+        "block of memory was not allocated successfully"
+    );
+    free_memory(block);
+}
+
