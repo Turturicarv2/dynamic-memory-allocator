@@ -188,9 +188,13 @@ Test(memory_allocation, stress_test)
 }
 
 
-/* test the splitting function of the memory allocator */
+/* test the splitting function of the memory allocator.
+Split the big memory chunk into 2 smaller chunks. 
+First one should be of 128 bytes, 
+the other one should have ALLOCATION_SIZE - 128 bytes of memory 
+(without considering that CHUNK_STRUCT_SIZE is not counted) */
 Test(memory_allocation, splitting_test) {
-    // Allocate a block smaller than the first chunk
+    /* Allocate a block smaller than the first chunk */
     uint8_t size = 128;
     void *block = allocate_memory(size);
     cr_assert(
@@ -198,7 +202,7 @@ Test(memory_allocation, splitting_test) {
         "block of memory was not allocated successfully"
     );
 
-    // Check if the chunk was split
+    /* Check if the chunk was split */
     memory_chunk_t *chunk = (memory_chunk_t *)((char *)block - CHUNK_STRUCT_SIZE);
     cr_assert(
         eq(chunk->metadata.in_use, IN_USE), 
@@ -209,7 +213,7 @@ Test(memory_allocation, splitting_test) {
         "chunk size is not correct"
     );
 
-    // Check the remaining chunk
+    /* Check the remaining chunk */
     memory_chunk_t *next_chunk = chunk->next_chunk;
     cr_assert(
         ne(next_chunk, NULL), 
@@ -220,7 +224,10 @@ Test(memory_allocation, splitting_test) {
         "Next chunk should be free"
     );
     cr_assert(
-        eq(next_chunk->metadata.chunk_size + 2 * CHUNK_STRUCT_SIZE + chunk->metadata.chunk_size, 4096),
+        eq(
+            next_chunk->metadata.chunk_size + 2 * CHUNK_STRUCT_SIZE + chunk->metadata.chunk_size,
+            ALLOCATION_SIZE
+        ),
         "Incorrect split sizes"
     );
 
