@@ -234,3 +234,62 @@ Test(memory_allocation, splitting_test) {
     free_memory(chunk);
 }
 
+
+/* test that will check the best fit algorithm when searching for a free chunk.
+Multiple chunks will be allocated firstly, and then 2 will be freed.
+First one should have a bigger size, while the second one will have a smaller size.
+After that, another block of memory of the same size as the smaller one will be allocated.
+The block of memory recently allocated should skip the first free chunk of a bigger size
+and instead be allocated in the same place as the second memory chunk which has the same
+memory size as the newly allocated memory chunk */
+Test(memory_allocation, best_fit_test)
+{
+    void *block1 = allocate_memory(64);
+    cr_assert(
+        ne(block1, NULL), 
+        "block of memory was not allocated successfully"
+    );
+
+    void *block2 = allocate_memory(256);
+    cr_assert(
+        ne(block2, NULL), 
+        "block of memory was not allocated successfully"
+    );
+
+    void *block3 = allocate_memory(64);
+    cr_assert(
+        ne(block3, NULL), 
+        "block of memory was not allocated successfully"
+    );
+
+    void *block4 = allocate_memory(128);
+    cr_assert(
+        ne(block4, NULL), 
+        "block of memory was not allocated successfully"
+    );
+
+    void *block5 = allocate_memory(64);
+    cr_assert(
+        ne(block5, NULL), 
+        "block of memory was not allocated successfully"
+    );
+
+    free_memory(block2);
+    free_memory(block4);
+
+    void *block = allocate_memory(128);
+    cr_assert(
+        ne(block, NULL), 
+        "block of memory was not allocated successfully"
+    );
+    cr_assert(
+        eq(block, block4),
+        "block of memory was not allocated in the best place"
+    );
+
+    free_memory(block);
+    free_memory(block1);
+    free_memory(block3);
+    free_memory(block5);
+}
+
