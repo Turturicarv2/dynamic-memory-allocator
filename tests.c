@@ -293,3 +293,65 @@ Test(memory_allocation, best_fit_test)
     free_memory(block5);
 }
 
+
+Test(memory_allocation, coalescing_test)
+{
+    uint8_t size = 64;
+    void *block1 = allocate_memory(size);
+    cr_assert(
+        ne(block1, NULL), 
+        "block of memory was not allocated successfully"
+    );
+
+    memory_chunk_t *chunk1 = (memory_chunk_t *)((char *)block1 - CHUNK_STRUCT_SIZE);
+    cr_assert(
+        eq(chunk1->metadata.chunk_size, size),
+        "chunk size is not correct!"
+    );
+
+    void *block2 = allocate_memory(size);
+    cr_assert(
+        ne(block2, NULL), 
+        "block of memory was not allocated successfully"
+    );
+
+    memory_chunk_t *chunk2 = (memory_chunk_t *)((char *)block2 - CHUNK_STRUCT_SIZE);
+    cr_assert(
+        eq(chunk2->metadata.chunk_size, size),
+        "chunk size is not correct!"
+    );
+
+    void *block3 = allocate_memory(size);
+    cr_assert(
+        ne(block3, NULL), 
+        "block of memory was not allocated successfully"
+    );
+
+    memory_chunk_t *chunk3 = (memory_chunk_t *)((char *)block3 - CHUNK_STRUCT_SIZE);
+    cr_assert(
+        eq(chunk3->metadata.chunk_size, size),
+        "chunk size is not correct!"
+    );
+
+    /* chunk should not coalesce after freeing, so size should remain the same */
+    free_memory(block2);
+    cr_assert(
+        eq(chunk2->metadata.chunk_size, size),
+        "chunk size is not correct!"
+    );
+
+    /* chunk should coalesce with block2, so new size should be doubled */
+    /* also add CHUNK_STRUCT_SIZE to the new memory size */
+    free_memory(block1);
+    cr_assert(
+        eq(chunk1->metadata.chunk_size, size * 2 + CHUNK_STRUCT_SIZE),
+        "chunk size is not correct!"
+    );
+
+    /* chunk should coalesce with remaining chunks, so new size should be initial size */
+    free_memory(block3);
+    cr_assert(
+        eq(chunk1->metadata.chunk_size, ALLOCATION_SIZE - CHUNK_STRUCT_SIZE),
+        "chunk size is not correct!"
+    );
+}
