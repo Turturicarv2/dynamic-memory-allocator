@@ -294,6 +294,7 @@ Test(memory_allocation, best_fit_test)
 }
 
 
+/* Test that will check if freed memory chunks are being coalesced */
 Test(memory_allocation, coalescing_test)
 {
     uint8_t size = 64;
