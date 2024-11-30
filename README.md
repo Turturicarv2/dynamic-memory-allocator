@@ -3,6 +3,7 @@ This repository contains a custom memory allocation library implemented in C. It
 
 ### Features
 - Custom Memory Allocation (`allocate_memory`): Allocate memory dynamically using a custom implementation based on a linked list of memory chunks.
+- Thread-Safe Memory Management: Ensures safe concurrent access to memory allocation and deallocation functions using a mutex lock (`pthread_mutex_t`).
 - Memory Splitting: Efficiently split larger memory chunks into smaller chunks to fulfill allocation requests.
 - Memory Coalescing (`free_memory`): Merge adjacent free memory chunks during deallocation to minimize fragmentation.
 - System Memory Management: Use `mmap` to request memory pages from the operating system when needed.
@@ -14,6 +15,14 @@ This repository contains a custom memory allocation library implemented in C. It
 - `chunk_split(memory_chunk_t*, size_t)`: Splits a larger memory chunk into two smaller chunks, allocating one for the requested size and leaving the remainder available for future allocations.
 - `initialize_dynamic_memory()`: Requests a new memory page from the operating system using mmap and initializes it as the first chunk.
 
+### Thread Safety
+This library supports multi-threading by using a mutex (pthread_mutex_t) to synchronize access to shared memory structures. All critical sections in the allocate_memory and free_memory functions are protected to prevent data races and ensure consistent behavior in concurrent applications.
+Key thread-safety mechanisms:
+1. Global Mutex Lock: Protects access to the global linked list of memory chunks (`first_memory_chunk`).
+2. Error Handling: Ensures the mutex is always unlocked before returning in case of errors or invalid operations.
+3. Thread-safe Initialization and Cleanup:
+    - Mutex initialization and destruction are managed automatically using constructor and destructor attributes.
+
 ### Project Structure
 - Source Code:
     + `memory_allocation.c`: Implementation of the memory allocation functions.
@@ -21,7 +30,7 @@ This repository contains a custom memory allocation library implemented in C. It
 - Tests:
     + `tests.c`: Unit tests implemented using [Criterion](https://github.com/Snaipe/Criterion) to validate the functionality of the memory allocator.
 
-###Tests
+### Tests
 The library includes a comprehensive suite of unit tests written with the Criterion testing framework.
 To run the tests, ensure you have Criterion installed on your system. Compile and run the tests using the following command:
 ```
@@ -56,7 +65,7 @@ int main() {
 ```
 
 ### Known Limitations
-- No support for multi-threading; concurrent access may cause undefined behavior.
+- Performance Bottleneck in High-Concurrency Scenarios: A single global mutex may lead to contention in highly concurrent applications.
 - Alignment constraints may require modification for specific architectures.
 - Assumes a single contiguous memory block per allocation cycle (via mmap).
 
