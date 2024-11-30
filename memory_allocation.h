@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdbool.h> 
 #include <stdint.h>
+#include <pthread.h>
 
 /* DEFINES */
 #define PROT_READ_WRITE (PROT_READ | PROT_WRITE)
@@ -29,9 +30,6 @@ typedef struct memory_chunk
     chunk_metadata_t metadata;
     struct memory_chunk* next_chunk;
 } memory_chunk_t;
-
-/* GLOBAL VARIABLE DECLARATIONS */
-extern memory_chunk_t* first_memory_chunk;
 
 /* FUNCTION DECLARATIONS */
 void *allocate_memory(__uint16_t needed_memory_size);

@@ -5,9 +5,26 @@
 static void initialize_dynamic_memory();
 static void *chunk_split(memory_chunk_t *initial_chunk, uint16_t split_size);
 static memory_chunk_t *search_suitable_chunk(uint16_t needed_memory_size);
+static memory_chunk_t *get_chunk(memory_chunk_t *chunk, uint16_t size);
 
-/* GLOBAL VARIABLIE DEFINITIONS */
-memory_chunk_t *first_memory_chunk = NULL;
+/* GLOBAL VARIABLES */
+memory_chunk_t *first_memory_chunk;
+pthread_mutex_t memory_lock;
+
+
+/* CONSTRUCTOR AND DESTRUCTOR */
+__attribute__((constructor))
+void memory_allocator_init()
+{
+    pthread_mutex_init(&memory_lock, NULL);
+    first_memory_chunk = NULL;
+}
+
+__attribute__((destructor))
+void memory_allocator_cleanup()
+{
+    pthread_mutex_destroy(&memory_lock);
+}
 
 
 /* main allocation function that returns pointer to free memory address */
@@ -19,34 +36,30 @@ void *allocate_memory(uint16_t needed_memory_size)
         return NULL;
     }
 
+    /* thread lock */
+    pthread_mutex_lock(&memory_lock);
+
     /* for the first time the function is called, get the memory from the system */
     if(first_memory_chunk == NULL)
     {
         initialize_dynamic_memory();
-    }
 
-    /* check if initialization fails */
-    if(first_memory_chunk == NULL)
-    {
-        return NULL;
+        /* check if initialization fails */
+        if(first_memory_chunk == NULL)
+        {
+            pthread_mutex_unlock(&memory_lock); /* thread unlock before returning */
+            return NULL;
+        }
     }
 
     /* get the most suitable chunk */
     memory_chunk_t *suitable_chunk = search_suitable_chunk(needed_memory_size);
-    if(suitable_chunk == NULL)
-    {
-        return NULL;
-    }
-    /* chunk too small to be split */
-    else if(suitable_chunk->metadata.chunk_size - CHUNK_STRUCT_SIZE <= needed_memory_size)
-    {
-        suitable_chunk->metadata.in_use = IN_USE;
-        return (void *)((__uint8_t *)suitable_chunk + CHUNK_STRUCT_SIZE);
-    }
-    else
-    {
-        return chunk_split(suitable_chunk, needed_memory_size);
-    }
+    memory_chunk_t *return_chunk = get_chunk(suitable_chunk, needed_memory_size);
+
+    /* thread unlock */
+    pthread_mutex_unlock(&memory_lock);
+
+    return return_chunk;
 }
 
 
@@ -106,6 +119,25 @@ static memory_chunk_t *search_suitable_chunk(uint16_t needed_memory_size)
 }
 
 
+static memory_chunk_t *get_chunk(memory_chunk_t *chunk, uint16_t size)
+{
+    if(chunk == NULL)
+    {
+        return NULL;
+    }
+    /* chunk too small to be split */
+    else if(chunk->metadata.chunk_size - CHUNK_STRUCT_SIZE <= size)
+    {
+        chunk->metadata.in_use = IN_USE;
+        return (void *)((__uint8_t *)chunk + CHUNK_STRUCT_SIZE);
+    }
+    else
+    {
+        return chunk_split(chunk, size);
+    }
+}
+
+
 /* function that splits a bigger chunk into 2 smaller ones */
 static void *chunk_split(memory_chunk_t *initial_chunk, uint16_t split_size)
 {
@@ -128,6 +160,9 @@ static void *chunk_split(memory_chunk_t *initial_chunk, uint16_t split_size)
 /* function that frees a chunk of memory */
 void free_memory(void *chunk)
 {
+    /* thread lock */
+    pthread_mutex_lock(&memory_lock);
+
     /* search through the linked list to see if 
     the sent pointer is part of the memory chunks */
     memory_chunk_t *current_chunk = first_memory_chunk;
@@ -142,12 +177,16 @@ void free_memory(void *chunk)
     /* sent pointer does not point to memory chunks */
     if(current_chunk == NULL)
     {
+        /* Unlock thread before returning */
+        pthread_mutex_unlock(&memory_lock);
         return;
     }
 
     /* sent pointer was already freed */
     if(current_chunk->metadata.in_use == NOT_IN_USE)
     {
+        /* Unlock thread before returning */
+        pthread_mutex_unlock(&memory_lock);
         return;
     }
 
@@ -168,4 +207,8 @@ void free_memory(void *chunk)
                 + prev_memory_chunk->metadata.chunk_size + CHUNK_STRUCT_SIZE;
         prev_memory_chunk->next_chunk = current_chunk->next_chunk;
     }
+
+    /* Unlock thread before returning */
+    pthread_mutex_unlock(&memory_lock);
+    return;
 }
