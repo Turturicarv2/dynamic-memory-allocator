@@ -40,7 +40,6 @@ Key thread-safety mechanisms:
 
 ### Build and Run Instructions
 
-**Building the Library**
 Use the provided `Makefile` for ease of compilation:
 + Build the example program and tests:
 ```
