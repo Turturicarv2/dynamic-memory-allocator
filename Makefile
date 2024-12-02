@@ -1,25 +1,35 @@
-# Compiler and flags
 CC = gcc
-CFLAGS = -Wall -Wextra -pthread -g
-LDFLAGS = -pthread
+CFLAGS = -Wall -Wextra -pthread
 
-# Source files and output
-SRC = memory_allocation.c
-LIB = libmemory.a
+# Directories
+SRC_DIR = src
+TEST_DIR = tests
+BUILD_DIR = build
+EXAMPLE_DIR = example
 
-# Default target
-all: $(LIB)
+# Source files
+SRC_FILES = $(SRC_DIR)/memory_allocation.c
+TEST_FILES = $(TEST_DIR)/tests.c
+EXAMPLE_FILES = $(EXAMPLE_DIR)/example.c
 
-# Build static library
-$(LIB): $(SRC)
-	$(CC) $(CFLAGS) -c $(SRC)
-	ar rcs $(LIB) memory_allocation.o
+# Targets
+all: $(BUILD_DIR)/example $(BUILD_DIR)/tests
 
-# Tests target
-tests: $(SRC) tests.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o tests $(SRC) tests.c -lcriterion
-	./tests
+example: $(BUILD_DIR)/example
+	$(BUILD_DIR)/tests
 
-# Clean up
+tests: $(BUILD_DIR)/tests
+	$(BUILD_DIR)/tests
+
+# Build example
+$(BUILD_DIR)/example: $(SRC_FILES) $(EXAMPLE_FILES)
+	mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) -I$(SRC_DIR) -o $@ $^
+
+# Build tests
+$(BUILD_DIR)/tests: $(SRC_FILES) $(TEST_FILES)
+	mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) -I$(SRC_DIR) -o $@ $^ -lcriterion
+
 clean:
-	rm -f *.o $(LIB) tests
+	rm -rf $(BUILD_DIR)
