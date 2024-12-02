@@ -1,5 +1,5 @@
 # Memory Allocation Library
-This repository contains a custom memory allocation library implemented in C. It provides basic dynamic memory management features, such as allocation, deallocation, and memory chunk splitting, using a linked list of memory chunks.
+This repository contains a custom memory allocation library implemented in C. It provides thread-safe dynamic memory management features, including allocation, deallocation, memory chunk splitting, and coalescing, using a linked list of memory chunks.
 
 ### Features
 - Custom Memory Allocation (`allocate_memory`): Allocate memory dynamically using a custom implementation based on a linked list of memory chunks.
@@ -17,6 +17,7 @@ This repository contains a custom memory allocation library implemented in C. It
 
 ### Thread Safety
 This library supports multi-threading by using a mutex (pthread_mutex_t) to synchronize access to shared memory structures. All critical sections in the allocate_memory and free_memory functions are protected to prevent data races and ensure consistent behavior in concurrent applications.
+
 Key thread-safety mechanisms:
 1. Global Mutex Lock: Protects access to the global linked list of memory chunks (`first_memory_chunk`).
 2. Error Handling: Ensures the mutex is always unlocked before returning in case of errors or invalid operations.
@@ -29,22 +30,40 @@ Key thread-safety mechanisms:
     + `memory_allocation.h`: Header file defining the memory_chunk_t struct and function prototypes.
 - Tests:
     + `tests.c`: Unit tests implemented using [Criterion](https://github.com/Snaipe/Criterion) to validate the functionality of the memory allocator.
+- Makefile:
+    + Simplifies building, testing, and cleaning up the project.
 
-### Tests
-The library includes a comprehensive suite of unit tests written with the Criterion testing framework.
-To run the tests, ensure you have Criterion installed on your system. Compile and run the tests using the following command:
+### Build and Run Instructions
+**Building the Library and Example**
+
+Use the provided `Makefile` for ease of compilation:
++ Build the library and an example program:
 ```
-gcc -o tests *.c -lcriterion
-./tests
+make
 ```
-This will execute all the tests and display the results in the terminal.
++ Run the example program:
+```
+./example
+```
++ Clean up generated files:
+```
+make clean
+```
+
+**Running Tests**
+The library includes a comprehensive suite of unit tests:
++ Run the tests:
+```  
+    make tests
+```
+This compiles all source files with Criterion and runs the tests, displaying results in the terminal.
 
 ### Usage
-1. Include `memory_allocation.h` in your project.
+1. Include memory_allocation.h in your project.
 2. Link the library when compiling your project.
-3. Use `allocate_memory` and `free_memory` to manage memory dynamically in your application.
+3. Use allocate_memory and free_memory to manage memory dynamically.
 
-### Example
+**Example Code**
 ```
 #include "memory_allocation.h"
 
