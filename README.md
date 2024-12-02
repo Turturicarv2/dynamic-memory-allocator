@@ -41,7 +41,6 @@ Key thread-safety mechanisms:
 ### Build and Run Instructions
 
 **Building the Library**
-
 Use the provided `Makefile` for ease of compilation:
 + Build the example program and tests:
 ```
@@ -64,7 +63,7 @@ make clean
 
 1. Include memory_allocation.h in your project.
 2. Link the library when compiling your project.
-3. Use allocate_memory and free_memory to manage memory dynamically.
+3. Use `allocate_memory` and `free_memory` to manage memory dynamically.
 
 **Example Code**
 
